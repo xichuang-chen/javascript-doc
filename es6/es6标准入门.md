@@ -24,7 +24,7 @@ b // 1
 ### do 表达式
 ```js
 let x = do {
-  let t = 
+  let t = t * t + 1;
 }
 ```
 
