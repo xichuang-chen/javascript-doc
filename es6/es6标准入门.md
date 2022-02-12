@@ -90,3 +90,69 @@ let { foo, bar } = { foo: "aaa", bar: "bbb"};
 let { foo: baz } = { foo: "aaa", bar: "bbbb"};  //baz = "aaa"  foo //error, foo is not defined
 //上述代码中，foo 是匹配的模式， baz 才是变量
 ```
+
+## Proxy
+Proxy 用于修改某些操作的默认行为，可以理解为在目标对象前架设一个拦截层。  
+```js
+var proxy = new Proxy(target, handler);
+```
+
+### 实例：
+```js
+var handler = {
+  get: (target, name) => {
+    if (name === 'Prototype') {
+      return Object.prototype;
+    }
+    return 'Hello' + name;
+  },
+  apply: (target, thisBingding, args) => {
+    return args[0]
+  },
+  construct: (target, args) => {
+    return {value: args[1]};
+  }
+};
+var proxy = new Proxy((x, y) => x + y, handler);
+
+proxy(1, 2)  // 1  被apply拦截了，apply拦截Proxy实例, 并将其作为函数调用的操作, 比如 proxy(...args), proxy.call(object, ...args), proxy.apply(..)
+new proxy(1, 2)  // {value: 2} 被construct拦截了，比如, new proxy(...args)
+proxy.prototype === Object.prototype // true
+proxy.foo // 'Hello foo' // 被get拦截了，拦截属性的读取，如 proxy.foo proxy['foo']
+```
+handler 中还可以定义更多的拦截操作。
+
+### 用途
+拦截属性读取  
+```js
+var person = {name: "cxc"};
+
+var proxy = new Proxy(person, {
+  get: (target, property) => {
+    if (property in target) {
+      return target[property];
+    }
+    throw new ReferenceError("Property does not exist");
+  }
+})
+```
+如果访问对象不存在，抛出异常，而不是返回 undefined  
+
+实现观察者模式，在目标对象属性被读取或者被赋值时，可以拦截，然后触发其他操作。  
+
+
+## Promise
+Promise 是异步编程的一种解决方案，比传统的解决方案（回调函数和事件）更合理且强大.  
+Promise 简单来说，就是一个容器，里边保存着某个未来才会结束的事件(通常是一个异步操作)的结果。
+从语法上来说，Promise 是一个对象。  
+
+Promise 对象的两个特点:  
+- 对象状态不受外界影响。  
+Promise 对象代表一个异步操作，有三种状态: Pending, Fulfilled, Rejected。 只有异步操作的结果决定是哪一种状态
+- 一旦状态改变就不会再变，任何时候都可以得到这个结果  
+一旦状态改变就不会改变好理解，就是比如 pending -> Fulfilled 之后就不再改变了，一直保持这个结果  
+任何时候都可以得到这个结果，意思是就算改变已经发生了，再对Promise添加回调函数，也会理解得到这个结果，这与Event不同。  
+
+
+### 用法
+
